@@ -6,6 +6,7 @@ import (
 	"github.com/containernetworking/cni/pkg/types/current"
 	v1 "github.com/fafucoder/sriov-crd/pkg/apis/sriov/v1"
 	clientset "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned"
+	sriovclient "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned/typed/sriov/v1"
 	"github.com/fafucoder/sriov-crd/pkg/utils"
 	"github.com/jaypipes/ghw"
 	"github.com/vishvananda/netlink"
@@ -22,7 +23,7 @@ const (
 	netClass = 0x02
 )
 
-func CreateSriovVfCrd(client clientset.Interface, pod *corev1.Pod, vfSpec v1.SriovVFSpec) error {
+func CreateSriovVfCrd(client sriovclient.SriovV1Interface, pod *corev1.Pod, vfSpec v1.SriovVFSpec) error {
 	if client == nil {
 		return fmt.Errorf("no client set")
 	}
@@ -31,10 +32,10 @@ func CreateSriovVfCrd(client clientset.Interface, pod *corev1.Pod, vfSpec v1.Sri
 		return fmt.Errorf("no pod set")
 	}
 
-	vfCrd, err := client.SriovV1().SriovVFs().Get(fmt.Sprintf("%s.%s", pod.Name, pod.Namespace), metav1.GetOptions{})
+	vfCrd, err := client.SriovVFs().Get(fmt.Sprintf("%s.%s", pod.Name, pod.Namespace), metav1.GetOptions{})
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
-			_, err := client.SriovV1().SriovVFs().Create(&v1.SriovVF{
+			_, err := client.SriovVFs().Create(&v1.SriovVF{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: fmt.Sprintf("%s.%s", pod.Name, pod.Namespace),
 				},
@@ -56,13 +57,13 @@ func CreateSriovVfCrd(client clientset.Interface, pod *corev1.Pod, vfSpec v1.Sri
 	}
 
 	vfCrd.Spec = vfSpec
-	_, err = client.SriovV1().SriovVFs().Update(vfCrd)
+	_, err = client.SriovVFs().Update(vfCrd)
 
 	return err
 }
 
-func DeleteSriovVfCrd(client clientset.Interface, pod *corev1.Pod) error {
-	err := client.SriovV1().SriovVFs().Delete(fmt.Sprintf("%s.%s", pod.Name, pod.Namespace), &metav1.DeleteOptions{})
+func DeleteSriovVfCrd(client sriovclient.SriovV1Interface, pod *corev1.Pod) error {
+	err := client.SriovVFs().Delete(fmt.Sprintf("%s.%s", pod.Name, pod.Namespace), &metav1.DeleteOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return err
 	}
