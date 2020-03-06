@@ -54,7 +54,7 @@ func (in *SriovPF) DeepCopyObject() runtime.Object {
 func (in *SriovPFList) DeepCopyInto(out *SriovPFList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]SriovPF, len(*in))
@@ -130,7 +130,7 @@ func (in *SriovVF) DeepCopyObject() runtime.Object {
 func (in *SriovVFList) DeepCopyInto(out *SriovVFList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]SriovVF, len(*in))
