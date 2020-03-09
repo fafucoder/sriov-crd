@@ -4,8 +4,8 @@ import (
 	"fmt"
 	cnitypes "github.com/containernetworking/cni/pkg/types"
 	"github.com/containernetworking/cni/pkg/types/current"
+	"github.com/fafucoder/sriov-crd/pkg/apis/sriov"
 	v1 "github.com/fafucoder/sriov-crd/pkg/apis/sriov/v1"
-	clientset "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned"
 	sriovclient "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned/typed/sriov/v1"
 	"github.com/fafucoder/sriov-crd/pkg/utils"
 	"github.com/jaypipes/ghw"
@@ -35,12 +35,13 @@ func CreateSriovVfCrd(client sriovclient.SriovV1Interface, pod *corev1.Pod, vfSp
 	vfCrd, err := client.SriovVFs().Get(fmt.Sprintf("%s.%s", pod.Name, pod.Namespace), metav1.GetOptions{})
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
+			apiVersion := fmt.Sprintf("%s/%s", sriov.GroupName, "v1")
 			_, err := client.SriovVFs().Create(&v1.SriovVF{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: fmt.Sprintf("%s.%s", pod.Name, pod.Namespace),
 				},
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: "kubeovn.io/v1",
+					APIVersion: apiVersion,
 					Kind:       "SriovVF",
 				},
 				Spec: vfSpec,
@@ -104,7 +105,7 @@ func CreateSriovVfSpec(pod *corev1.Pod, r cnitypes.Result, deviceID string) (v1.
 	return vfSpec, nil
 }
 
-func CreateSriovPfCrd(client kubernetes.Interface, sriovClient clientset.Interface) error {
+func CreateSriovPfCrd(client kubernetes.Interface, sriovClient sriovclient.SriovV1Interface) error {
 	nodeList, err := client.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed get node list: %v", err)
@@ -122,21 +123,22 @@ func CreateSriovPfCrd(client kubernetes.Interface, sriovClient clientset.Interfa
 				continue
 			}
 
-			pfCrd, err := sriovClient.SriovV1().SriovPFs().Get(fmt.Sprintf("%s.%s", pfSpec.PfName, pfSpec.NodeName), metav1.GetOptions{})
+			pfCrd, err := sriovClient.SriovPFs().Get(fmt.Sprintf("%s.%s", pfSpec.PfName, pfSpec.NodeName), metav1.GetOptions{})
 			if err != nil {
 				if k8serrors.IsNotFound(err) {
-					_, err := sriovClient.SriovV1().SriovPFs().Create(&v1.SriovPF{
+					apiVersion := fmt.Sprintf("%s/%s", sriov.GroupName, "v1")
+					_, err := sriovClient.SriovPFs().Create(&v1.SriovPF{
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fmt.Sprintf("%s.%s", pfSpec.PfName, pfSpec.NodeName),
 						},
 						TypeMeta: metav1.TypeMeta{
-							APIVersion: "kubeovn.io/v1",
+							APIVersion: apiVersion,
 							Kind:       "SriovPF",
 						},
 						Spec: pfSpec,
 					})
 					if err != nil {
-						klog.Errorf("failed create sriov vf crd: %v", err)
+						klog.Errorf("failed create sriov pf crd: %v", err)
 						return err
 					}
 
@@ -147,7 +149,7 @@ func CreateSriovPfCrd(client kubernetes.Interface, sriovClient clientset.Interfa
 			}
 
 			pfCrd.Spec = pfSpec
-			_, err = sriovClient.SriovV1().SriovPFs().Update(pfCrd)
+			_, err = sriovClient.SriovPFs().Update(pfCrd)
 
 			return err
 		}
