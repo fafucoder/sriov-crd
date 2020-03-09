@@ -1,0 +1,61 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: sriov-pfs.k8s.cni.cncf.io
+spec:
+  group: k8s.cni.cncf.io
+  version: v1
+  scope: Cluster
+  names:
+    plural: sriov-pfs
+    singular: sriov-pf
+    kind: SriovPF
+    shortNames:
+      - pf
+  additionalPrinterColumns:
+    - name: IfName
+      type: string
+      JSONPath: .spec.ifName
+    - name: PfName
+      type: string
+      JSONPath: .spec.pfName
+    - name: Node
+      type: string
+      JSONPath: .spec.nodeName
+    - name: VfNum
+      type: int
+      JSONPath: .spec.vfNum
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: sriov-vfs.k8s.cni.cncf.io
+spec:
+  group: k8s.cni.cncf.io
+  version: v1
+  scope: Cluster
+  names:
+    plural: sriov-vfs
+    singular: sriov-vf
+    kind: SriovVF
+    shortNames:
+      - vf
+  additionalPrinterColumns:
+    - name: DeviceID
+      type: string
+      JSONPath: .spec.deviceID
+    - name: PFName
+      type: string
+      JSONPath: .spec.pfName
+    - name: PodName
+      type: string
+      JSONPath: .spec.podName
+    - name: PodNamespace
+      type: string
+      JSONPath: .spec.podNamespace
+    - name: NetName
+      type: string
+      JSONPath: .spec.netName
+    - name: NodeName
+      type: string
+      JSONPath: .spec.nodeName

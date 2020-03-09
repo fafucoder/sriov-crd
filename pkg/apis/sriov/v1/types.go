@@ -17,13 +17,13 @@ type SriovPF struct {
 }
 
 type SriovPFSpec struct {
-	IfName   string `json:"if_name"`
-	PfName   string `json:"pf_name"`
+	IfName   string `json:"ifName"`
+	PfName   string `json:"pfName"`
 	Driver   string `json:"driver"`
-	NodeName string `json:"node_name"`
+	NodeName string `json:"nodeName"`
 	Vendor   string `json:"vendor"`
 	Product  string `json:"product"`
-	VfNum    int    `json:"vf_id"`
+	VfNum    int    `json:"vfNum"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -48,14 +48,14 @@ type SriovVF struct {
 }
 
 type SriovVFSpec struct {
-	DeviceID     string `json:"device_id"`
-	PFName       string `json:"pf_name"`
-	PodName      string `json:"pod_name"`
-	PodNamespace string `json:"pod_namespace"`
-	NodeName     string `json:"node_name"`
-	NetName      string `json:"net_name"`
-	IPAddress    string `json:"ip_address"`
-	MacAddress   string `json:"mac_address"`
+	DeviceID     string `json:"deviceID"`
+	PFName       string `json:"pfName"`
+	PodName      string `json:"podName"`
+	PodNamespace string `json:"podNamespace"`
+	NodeName     string `json:"nodeName"`
+	NetName      string `json:"netName"`
+	IPAddress    string `json:"ipAddress"`
+	MacAddress   string `json:"macAddress"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
