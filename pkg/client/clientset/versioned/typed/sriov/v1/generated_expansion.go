@@ -17,6 +17,6 @@ limitations under the License.
 
 package v1
 
-type SriovPFExpansion interface{}
+type PFExpansion interface{}
 
-type SriovVFExpansion interface{}
+type VFExpansion interface{}

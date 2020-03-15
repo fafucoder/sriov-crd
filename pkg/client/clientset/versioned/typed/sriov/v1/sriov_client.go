@@ -25,8 +25,8 @@ import (
 
 type KubeovnV1Interface interface {
 	RESTClient() rest.Interface
-	SriovPFsGetter
-	SriovVFsGetter
+	PFsGetter
+	VFsGetter
 }
 
 // KubeovnV1Client is used to interact with features provided by the kubeovn.io group.
@@ -34,12 +34,12 @@ type KubeovnV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *KubeovnV1Client) SriovPFs() SriovPFInterface {
-	return newSriovPFs(c)
+func (c *KubeovnV1Client) PFs() PFInterface {
+	return newPFs(c)
 }
 
-func (c *KubeovnV1Client) SriovVFs() SriovVFInterface {
-	return newSriovVFs(c)
+func (c *KubeovnV1Client) VFs() VFInterface {
+	return newVFs(c)
 }
 
 // NewForConfig creates a new KubeovnV1Client for the given config.

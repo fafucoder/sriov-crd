@@ -23,10 +23,10 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// SriovPFs returns a SriovPFInformer.
-	SriovPFs() SriovPFInformer
-	// SriovVFs returns a SriovVFInformer.
-	SriovVFs() SriovVFInformer
+	// PFs returns a PFInformer.
+	PFs() PFInformer
+	// VFs returns a VFInformer.
+	VFs() VFInformer
 }
 
 type version struct {
@@ -40,12 +40,12 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// SriovPFs returns a SriovPFInformer.
-func (v *version) SriovPFs() SriovPFInformer {
-	return &sriovPFInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+// PFs returns a PFInformer.
+func (v *version) PFs() PFInformer {
+	return &pFInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
-// SriovVFs returns a SriovVFInformer.
-func (v *version) SriovVFs() SriovVFInformer {
-	return &sriovVFInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+// VFs returns a VFInformer.
+func (v *version) VFs() VFInformer {
+	return &vFInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }

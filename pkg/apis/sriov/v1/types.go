@@ -9,14 +9,14 @@ import (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +genclient:nonNamespaced
 
-type SriovPF struct {
+type PF struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec SriovPFSpec `json:"spec"`
+	Spec PFSpec `json:"spec"`
 }
 
-type SriovPFSpec struct {
+type PFSpec struct {
 	IfName   string `json:"ifName"`
 	PfName   string `json:"pfName"`
 	Driver   string `json:"driver"`
@@ -28,11 +28,11 @@ type SriovPFSpec struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type SriovPFList struct {
+type PFList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
 
-	Items []SriovPF `json:"items"`
+	Items []PF `json:"items"`
 }
 
 // +genclient
@@ -40,14 +40,14 @@ type SriovPFList struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +genclient:nonNamespaced
 
-type SriovVF struct {
+type VF struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec SriovVFSpec `json:"spec"`
+	Spec VFSpec `json:"spec"`
 }
 
-type SriovVFSpec struct {
+type VFSpec struct {
 	DeviceID     string `json:"deviceID"`
 	PFName       string `json:"pfName"`
 	PodName      string `json:"podName"`
@@ -60,9 +60,9 @@ type SriovVFSpec struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type SriovVFList struct {
+type VFList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
 
-	Items []SriovVF `json:"items"`
+	Items []VF `json:"items"`
 }

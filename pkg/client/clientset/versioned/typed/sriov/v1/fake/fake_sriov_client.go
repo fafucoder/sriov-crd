@@ -27,12 +27,12 @@ type FakeKubeovnV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeKubeovnV1) SriovPFs() v1.SriovPFInterface {
-	return &FakeSriovPFs{c}
+func (c *FakeKubeovnV1) PFs() v1.PFInterface {
+	return &FakePFs{c}
 }
 
-func (c *FakeKubeovnV1) SriovVFs() v1.SriovVFInterface {
-	return &FakeSriovVFs{c}
+func (c *FakeKubeovnV1) VFs() v1.VFInterface {
+	return &FakeVFs{c}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

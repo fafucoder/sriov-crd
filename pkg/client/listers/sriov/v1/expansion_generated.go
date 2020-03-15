@@ -17,10 +17,10 @@ limitations under the License.
 
 package v1
 
-// SriovPFListerExpansion allows custom methods to be added to
-// SriovPFLister.
-type SriovPFListerExpansion interface{}
+// PFListerExpansion allows custom methods to be added to
+// PFLister.
+type PFListerExpansion interface{}
 
-// SriovVFListerExpansion allows custom methods to be added to
-// SriovVFLister.
-type SriovVFListerExpansion interface{}
+// VFListerExpansion allows custom methods to be added to
+// VFLister.
+type VFListerExpansion interface{}
