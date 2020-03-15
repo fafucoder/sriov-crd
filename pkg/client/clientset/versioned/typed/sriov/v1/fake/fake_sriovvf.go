@@ -29,12 +29,12 @@ import (
 
 // FakeSriovVFs implements SriovVFInterface
 type FakeSriovVFs struct {
-	Fake *FakeSriovV1
+	Fake *FakeKubeovnV1
 }
 
-var sriovvfsResource = schema.GroupVersionResource{Group: "k8s.cni.cncf.io", Version: "v1", Resource: "sriovvfs"}
+var sriovvfsResource = schema.GroupVersionResource{Group: "kubeovn.io", Version: "v1", Resource: "sriovvfs"}
 
-var sriovvfsKind = schema.GroupVersionKind{Group: "k8s.cni.cncf.io", Version: "v1", Kind: "SriovVF"}
+var sriovvfsKind = schema.GroupVersionKind{Group: "kubeovn.io", Version: "v1", Kind: "SriovVF"}
 
 // Get takes name of the sriovVF, and returns the corresponding sriovVF object, and an error if there is any.
 func (c *FakeSriovVFs) Get(name string, options v1.GetOptions) (result *sriovv1.SriovVF, err error) {

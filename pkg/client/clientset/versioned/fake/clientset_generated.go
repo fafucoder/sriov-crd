@@ -19,8 +19,8 @@ package fake
 
 import (
 	clientset "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned"
-	sriovv1 "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned/typed/sriov/v1"
-	fakesriovv1 "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned/typed/sriov/v1/fake"
+	kubeovnv1 "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned/typed/sriov/v1"
+	fakekubeovnv1 "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned/typed/sriov/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -75,7 +75,7 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// SriovV1 retrieves the SriovV1Client
-func (c *Clientset) SriovV1() sriovv1.SriovV1Interface {
-	return &fakesriovv1.FakeSriovV1{Fake: &c.Fake}
+// KubeovnV1 retrieves the KubeovnV1Client
+func (c *Clientset) KubeovnV1() kubeovnv1.KubeovnV1Interface {
+	return &fakekubeovnv1.FakeKubeovnV1{Fake: &c.Fake}
 }

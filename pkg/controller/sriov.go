@@ -23,7 +23,7 @@ const (
 	netClass = 0x02
 )
 
-func CreateSriovVfCrd(client sriovclient.SriovV1Interface, pod *corev1.Pod, vfSpec v1.SriovVFSpec) error {
+func CreateSriovVfCrd(client sriovclient.KubeovnV1Interface, pod *corev1.Pod, vfSpec v1.SriovVFSpec) error {
 	if client == nil {
 		return fmt.Errorf("no client set")
 	}
@@ -63,7 +63,7 @@ func CreateSriovVfCrd(client sriovclient.SriovV1Interface, pod *corev1.Pod, vfSp
 	return err
 }
 
-func DeleteSriovVfCrd(client sriovclient.SriovV1Interface, pod *corev1.Pod) error {
+func DeleteSriovVfCrd(client sriovclient.KubeovnV1Interface, pod *corev1.Pod) error {
 	err := client.SriovVFs().Delete(fmt.Sprintf("%s.%s", pod.Name, pod.Namespace), &metav1.DeleteOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return err
@@ -105,7 +105,7 @@ func CreateSriovVfSpec(pod *corev1.Pod, r cnitypes.Result, deviceID string) (v1.
 	return vfSpec, nil
 }
 
-func CreateSriovPfCrd(client kubernetes.Interface, sriovClient sriovclient.SriovV1Interface) error {
+func CreateSriovPfCrd(client kubernetes.Interface, sriovClient sriovclient.KubeovnV1Interface) error {
 	nodeList, err := client.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed get node list: %v", err)

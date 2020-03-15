@@ -59,13 +59,13 @@ func NewFilteredSriovPFInformer(client versioned.Interface, resyncPeriod time.Du
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SriovV1().SriovPFs().List(options)
+				return client.KubeovnV1().SriovPFs().List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SriovV1().SriovPFs().Watch(options)
+				return client.KubeovnV1().SriovPFs().Watch(options)
 			},
 		},
 		&sriovv1.SriovPF{},

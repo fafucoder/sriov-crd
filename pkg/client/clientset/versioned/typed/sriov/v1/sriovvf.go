@@ -53,7 +53,7 @@ type sriovVFs struct {
 }
 
 // newSriovVFs returns a SriovVFs
-func newSriovVFs(c *SriovV1Client) *sriovVFs {
+func newSriovVFs(c *KubeovnV1Client) *sriovVFs {
 	return &sriovVFs{
 		client: c.RESTClient(),
 	}
