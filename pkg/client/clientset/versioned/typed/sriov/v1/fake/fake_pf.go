@@ -29,12 +29,12 @@ import (
 
 // FakePFs implements PFInterface
 type FakePFs struct {
-	Fake *FakeKubeovnV1
+	Fake *FakeK8sCniCncfIoV1
 }
 
-var pfsResource = schema.GroupVersionResource{Group: "kubeovn.io", Version: "v1", Resource: "pfs"}
+var pfsResource = schema.GroupVersionResource{Group: "k8s.cni.cncf.io", Version: "v1", Resource: "pfs"}
 
-var pfsKind = schema.GroupVersionKind{Group: "kubeovn.io", Version: "v1", Kind: "PF"}
+var pfsKind = schema.GroupVersionKind{Group: "k8s.cni.cncf.io", Version: "v1", Kind: "PF"}
 
 // Get takes name of the pF, and returns the corresponding pF object, and an error if there is any.
 func (c *FakePFs) Get(name string, options v1.GetOptions) (result *sriovv1.PF, err error) {

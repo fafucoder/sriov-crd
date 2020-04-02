@@ -1,5 +1,5 @@
 package sriov
 
 const (
-	GroupName = "kubeovn.io"
+	GroupName = "k8s.cni.cncf.io"
 )

@@ -48,6 +48,7 @@ type VF struct {
 }
 
 type VFSpec struct {
+	VFID         int    `json:"vfID"`
 	DeviceID     string `json:"deviceID"`
 	PFName       string `json:"pfName"`
 	PodName      string `json:"podName"`

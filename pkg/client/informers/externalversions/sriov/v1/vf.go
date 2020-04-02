@@ -59,13 +59,13 @@ func NewFilteredVFInformer(client versioned.Interface, resyncPeriod time.Duratio
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubeovnV1().VFs().List(options)
+				return client.K8sCniCncfIoV1().VFs().List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubeovnV1().VFs().Watch(options)
+				return client.K8sCniCncfIoV1().VFs().Watch(options)
 			},
 		},
 		&sriovv1.VF{},

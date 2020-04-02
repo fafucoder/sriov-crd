@@ -23,21 +23,21 @@ import (
 	testing "k8s.io/client-go/testing"
 )
 
-type FakeKubeovnV1 struct {
+type FakeK8sCniCncfIoV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeKubeovnV1) PFs() v1.PFInterface {
+func (c *FakeK8sCniCncfIoV1) PFs() v1.PFInterface {
 	return &FakePFs{c}
 }
 
-func (c *FakeKubeovnV1) VFs() v1.VFInterface {
+func (c *FakeK8sCniCncfIoV1) VFs() v1.VFInterface {
 	return &FakeVFs{c}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeKubeovnV1) RESTClient() rest.Interface {
+func (c *FakeK8sCniCncfIoV1) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: pfs.kubeovn.io
+  name: pfs.k8s.cni.cncf.io
 spec:
-  group: kubeovn.io
+  group: k8s.cni.cncf.io
   version: v1
   scope: Cluster
   names:
@@ -13,12 +13,12 @@ spec:
     shortNames:
       - pf
   additionalPrinterColumns:
-    - name: IfName
-      type: string
-      JSONPath: .spec.ifName
     - name: PfName
       type: string
       JSONPath: .spec.pfName
+    - name: Driver
+      type: string
+      JSONPath: .spec.driver
     - name: Node
       type: string
       JSONPath: .spec.nodeName
@@ -29,9 +29,9 @@ spec:
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: vfs.kubeovn.io
+  name: vfs.k8s.cni.cncf.io
 spec:
-  group: kubeovn.io
+  group: k8s.cni.cncf.io
   version: v1
   scope: Cluster
   names:
@@ -41,6 +41,9 @@ spec:
     shortNames:
       - vf
   additionalPrinterColumns:
+    - name: VFID
+      type: integer
+      JSONPath: .spec.vfID
     - name: DeviceID
       type: string
       JSONPath: .spec.deviceID

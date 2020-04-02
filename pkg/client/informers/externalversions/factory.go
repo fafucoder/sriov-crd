@@ -171,9 +171,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Kubeovn() sriov.Interface
+	K8sCniCncfIo() sriov.Interface
 }
 
-func (f *sharedInformerFactory) Kubeovn() sriov.Interface {
+func (f *sharedInformerFactory) K8sCniCncfIo() sriov.Interface {
 	return sriov.New(f, f.namespace, f.tweakListOptions)
 }

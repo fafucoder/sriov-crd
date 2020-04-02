@@ -53,7 +53,7 @@ type vFs struct {
 }
 
 // newVFs returns a VFs
-func newVFs(c *KubeovnV1Client) *vFs {
+func newVFs(c *K8sCniCncfIoV1Client) *vFs {
 	return &vFs{
 		client: c.RESTClient(),
 	}

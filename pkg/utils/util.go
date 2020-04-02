@@ -9,12 +9,30 @@ import (
 	"strings"
 )
 
-const (
-	netDirectory     = "/sys/class/net"
-	sysBusPci        = "/sys/bus/pci/devices"
+var (
+	NetDirectory     = "/sys/class/net"
+	SysBusPci        = "/sys/bus/pci/devices"
 	configuredVfFile = "sriov_numvfs"
 	totalVfFile      = "sriov_totalvfs"
 )
+
+func GetPFName(pciAddr string) (string, error) {
+	path := filepath.Join(SysBusPci, pciAddr, "physfn", "net")
+	_, err := os.Lstat(path)
+	if err != nil {
+		return "", err
+	}
+
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return "", fmt.Errorf("no interface name found for device %s", pciAddr)
+	}
+	if len(files) < 1 {
+		return "", fmt.Errorf("PF network device not found")
+	}
+
+	return strings.TrimSpace(files[0].Name()), nil
+}
 
 func GetVFInfo(pciAddr string) (string, int, error) {
 	var vfID int
@@ -32,37 +50,14 @@ func GetVFInfo(pciAddr string) (string, int, error) {
 	return pf, vfID, nil
 }
 
-func GetPFName(pciAddr string) (string, error) {
-	path := filepath.Join(sysBusPci, pciAddr, "physfn", "net")
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			path := filepath.Join(sysBusPci, pciAddr, "net")
-			files, err = ioutil.ReadDir(path)
-			if err != nil {
-				return "", err
-			}
-			if len(files) < 1 {
-				return "", fmt.Errorf("no interface name found for device %s", pciAddr)
-			}
-			return files[0].Name(), nil
-		}
-		return "", err
-	} else if len(files) > 0 {
-		return files[0].Name(), nil
-	}
-
-	return "", fmt.Errorf("the PF name is not found for device %s", pciAddr)
-}
-
-func GetVFID(addr string, pfName string) (int, error) {
+func GetVFID(pciAddr, pfName string) (int, error) {
 	var id int
 	vfTotal, err := GetVFNum(pfName)
 	if err != nil {
 		return id, err
 	}
 	for vf := 0; vf <= vfTotal; vf++ {
-		vfDir := filepath.Join(netDirectory, pfName, "device", fmt.Sprintf("virtfn%d", vf))
+		vfDir := filepath.Join(NetDirectory, pfName, "device", fmt.Sprintf("virtfn%d", vf))
 		_, err := os.Lstat(vfDir)
 		if err != nil {
 			continue
@@ -72,17 +67,17 @@ func GetVFID(addr string, pfName string) (int, error) {
 			continue
 		}
 		pciaddr := filepath.Base(pciinfo)
-		if pciaddr == addr {
+		if pciaddr == pciAddr {
 			return vf, nil
 		}
 	}
-	return id, fmt.Errorf("unable to get VF ID with PF: %s and VF pci address %v", pfName, addr)
+	return id, fmt.Errorf("unable to get VF ID with PF: %s and VF pci address %v", pfName, pciAddr)
 }
 
 func GetVFNum(ifName string) (int, error) {
 	var vfTotal int
 
-	sriovFile := filepath.Join(netDirectory, ifName, "device", configuredVfFile)
+	sriovFile := filepath.Join(NetDirectory, ifName, "device", configuredVfFile)
 	if _, err := os.Lstat(sriovFile); err != nil {
 		return vfTotal, fmt.Errorf("failed to open the sriov_numfs of device %q: %v", ifName, err)
 	}
@@ -106,7 +101,7 @@ func GetVFNum(ifName string) (int, error) {
 }
 
 func GetDriverName(pciAddr string) (string, error) {
-	driverLink := filepath.Join(sysBusPci, pciAddr, "driver")
+	driverLink := filepath.Join(SysBusPci, pciAddr, "driver")
 	driverInfo, err := os.Readlink(driverLink)
 	if err != nil {
 		return "", fmt.Errorf("error getting driver info for device %s %v", pciAddr, err)
@@ -117,7 +112,7 @@ func GetDriverName(pciAddr string) (string, error) {
 
 func GetPciAddress(ifName string, vf int) (string, error) {
 	var pciaddr string
-	vfDir := filepath.Join(netDirectory, ifName, "device", fmt.Sprintf("virtfn%d", vf))
+	vfDir := filepath.Join(NetDirectory, ifName, "device", fmt.Sprintf("virtfn%d", vf))
 	dirInfo, err := os.Lstat(vfDir)
 
 	if err != nil {
@@ -139,7 +134,7 @@ func GetPciAddress(ifName string, vf int) (string, error) {
 
 func GetVFNames(pciAddr string) ([]string, error) {
 	var names []string
-	netDir := filepath.Join(sysBusPci, pciAddr, "net")
+	netDir := filepath.Join(SysBusPci, pciAddr, "net")
 	if _, err := os.Lstat(netDir); err != nil {
 		return nil, fmt.Errorf("GetNetNames: no net directory under pci device %s: %q", pciAddr, err)
 	}
@@ -158,7 +153,7 @@ func GetVFNames(pciAddr string) ([]string, error) {
 }
 
 func IsSriovPF(pciAddr string) bool {
-	totalVfFilePath := filepath.Join(sysBusPci, pciAddr, totalVfFile)
+	totalVfFilePath := filepath.Join(SysBusPci, pciAddr, totalVfFile)
 	if _, err := os.Stat(totalVfFilePath); err != nil {
 		return false
 	}
@@ -167,9 +162,10 @@ func IsSriovPF(pciAddr string) bool {
 }
 
 func IsSriovVF(pciAddr string) bool {
-	totalVfFilePath := filepath.Join(sysBusPci, pciAddr, "physfn")
-	if _, err := os.Stat(totalVfFilePath); err != nil {
+	physfnPath := filepath.Join(SysBusPci, pciAddr, "physfn")
+	if _, err := os.Stat(physfnPath); err != nil {
 		return false
 	}
+
 	return true
 }

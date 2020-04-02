@@ -8,9 +8,9 @@ import (
 	v1 "github.com/fafucoder/sriov-crd/pkg/apis/sriov/v1"
 	sriovclient "github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned/typed/sriov/v1"
 	"github.com/fafucoder/sriov-crd/pkg/utils"
+	"github.com/intel/multus-cni/logging"
 	"github.com/jaypipes/ghw"
 	"github.com/vishvananda/netlink"
-	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -23,32 +23,22 @@ const (
 	netClass = 0x02
 )
 
-func CreateSriovVfCrd(client sriovclient.KubeovnV1Interface, pod *corev1.Pod, vfSpec v1.SriovVFSpec) error {
+func CreateSriovVfCrd(client sriovclient.K8sCniCncfIoV1Interface, vfSpec v1.VFSpec, name string) error {
 	if client == nil {
 		return fmt.Errorf("no client set")
 	}
 
-	if pod == nil {
-		return fmt.Errorf("no pod set")
-	}
-
-	vfCrd, err := client.SriovVFs().Get(fmt.Sprintf("%s.%s", pod.Name, pod.Namespace), metav1.GetOptions{})
+	vfCrd, err := client.VFs().Get(name, metav1.GetOptions{})
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
-			apiVersion := fmt.Sprintf("%s/%s", sriov.GroupName, "v1")
-			_, err := client.SriovVFs().Create(&v1.SriovVF{
+			_, err := client.VFs().Create(&v1.VF{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: fmt.Sprintf("%s.%s", pod.Name, pod.Namespace),
-				},
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: apiVersion,
-					Kind:       "SriovVF",
+					Name: name,
 				},
 				Spec: vfSpec,
 			})
 			if err != nil {
-				klog.Errorf("failed create sriov vf crd: %v", err)
-				return err
+				return fmt.Errorf("failed create sriov vf crd: %v", err)
 			}
 
 			return nil
@@ -58,13 +48,16 @@ func CreateSriovVfCrd(client sriovclient.KubeovnV1Interface, pod *corev1.Pod, vf
 	}
 
 	vfCrd.Spec = vfSpec
-	_, err = client.SriovVFs().Update(vfCrd)
+	_, err = client.VFs().Update(vfCrd)
 
 	return err
 }
 
-func DeleteSriovVfCrd(client sriovclient.KubeovnV1Interface, pod *corev1.Pod) error {
-	err := client.SriovVFs().Delete(fmt.Sprintf("%s.%s", pod.Name, pod.Namespace), &metav1.DeleteOptions{})
+func DeleteSriovVfCrd(client sriovclient.K8sCniCncfIoV1Interface, name string) error {
+	if client == nil {
+		return fmt.Errorf("not client set")
+	}
+	err := client.VFs().Delete(name, &metav1.DeleteOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return err
 	}
@@ -72,8 +65,8 @@ func DeleteSriovVfCrd(client sriovclient.KubeovnV1Interface, pod *corev1.Pod) er
 	return nil
 }
 
-func CreateSriovVfSpec(pod *corev1.Pod, r cnitypes.Result, deviceID string) (v1.SriovVFSpec, error) {
-	vfSpec := v1.SriovVFSpec{}
+func CreateSriovVfSpec(r cnitypes.Result, podName, podNamespace, deviceID string) (v1.VFSpec, error) {
+	vfSpec := v1.VFSpec{}
 
 	result, err := current.NewResultFromResult(r)
 	if err != nil {
@@ -85,14 +78,16 @@ func CreateSriovVfSpec(pod *corev1.Pod, r cnitypes.Result, deviceID string) (v1.
 	}
 
 	pf, vf, err := utils.GetVFInfo(deviceID)
+	logging.Errorf("get vf info: %v %v", pf, vf)
 	if err != nil {
 		return vfSpec, fmt.Errorf("failed get vf info:%v", err)
 	}
 
-	vfSpec.DeviceID = string(vf)
+	vfSpec.VFID = vf
+	vfSpec.DeviceID = deviceID
 	vfSpec.PFName = pf
-	vfSpec.PodNamespace = pod.Namespace
-	vfSpec.PodName = pod.Name
+	vfSpec.PodNamespace = podNamespace
+	vfSpec.PodName = podName
 	vfSpec.NodeName = os.Getenv("KUBE_NODE_NAME")
 
 	for _, ifs := range result.Interfaces {
@@ -105,16 +100,16 @@ func CreateSriovVfSpec(pod *corev1.Pod, r cnitypes.Result, deviceID string) (v1.
 	return vfSpec, nil
 }
 
-func CreateSriovPfCrd(client kubernetes.Interface, sriovClient sriovclient.KubeovnV1Interface) error {
+func CreateSriovPfCrd(client kubernetes.Interface, sriovClient sriovclient.K8sCniCncfIoV1Interface) error {
 	nodeList, err := client.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
-		return fmt.Errorf("failed get node list: %v", err)
+		return logging.Errorf("failed get node list: %v", err)
 	}
 
 	for _, node := range nodeList.Items {
 		sriovPfSpec, err := discoverHostDevices(node.Name)
 		if err != nil {
-			klog.Errorf("failed get this host devices: %v", err)
+			logging.Errorf("failed get this host devices: %v", err)
 			continue
 		}
 
@@ -123,17 +118,17 @@ func CreateSriovPfCrd(client kubernetes.Interface, sriovClient sriovclient.Kubeo
 				continue
 			}
 
-			pfCrd, err := sriovClient.SriovPFs().Get(fmt.Sprintf("%s.%s", pfSpec.PfName, pfSpec.NodeName), metav1.GetOptions{})
+			pfCrd, err := sriovClient.PFs().Get(fmt.Sprintf("%s.%s", pfSpec.PfName, pfSpec.NodeName), metav1.GetOptions{})
 			if err != nil {
 				if k8serrors.IsNotFound(err) {
 					apiVersion := fmt.Sprintf("%s/%s", sriov.GroupName, "v1")
-					_, err := sriovClient.SriovPFs().Create(&v1.SriovPF{
+					_, err := sriovClient.PFs().Create(&v1.PF{
 						ObjectMeta: metav1.ObjectMeta{
 							Name: fmt.Sprintf("%s.%s", pfSpec.PfName, pfSpec.NodeName),
 						},
 						TypeMeta: metav1.TypeMeta{
 							APIVersion: apiVersion,
-							Kind:       "SriovPF",
+							Kind:       "PF",
 						},
 						Spec: pfSpec,
 					})
@@ -149,7 +144,7 @@ func CreateSriovPfCrd(client kubernetes.Interface, sriovClient sriovclient.Kubeo
 			}
 
 			pfCrd.Spec = pfSpec
-			_, err = sriovClient.SriovPFs().Update(pfCrd)
+			_, err = sriovClient.PFs().Update(pfCrd)
 
 			return err
 		}
@@ -158,12 +153,12 @@ func CreateSriovPfCrd(client kubernetes.Interface, sriovClient sriovclient.Kubeo
 	return err
 }
 
-func discoverHostDevices(nodeName string) ([]v1.SriovPFSpec, error) {
-	var pfList []v1.SriovPFSpec
+func discoverHostDevices(nodeName string) ([]v1.PFSpec, error) {
+	var pfList []v1.PFSpec
 
 	pci, err := ghw.PCI()
 	if err != nil {
-		return pfList, fmt.Errorf("error getting PCI Info: %v", err)
+		return pfList, logging.Errorf("error getting PCI Info: %v", err)
 	}
 
 	devices := pci.ListDevices()
@@ -174,6 +169,7 @@ func discoverHostDevices(nodeName string) ([]v1.SriovPFSpec, error) {
 	for _, device := range devices {
 		devClass, err := strconv.ParseInt(device.Class.ID, 16, 64)
 		if err != nil {
+			logging.Errorf("failed get device class %v", err)
 			continue
 		}
 
@@ -194,7 +190,7 @@ func discoverHostDevices(nodeName string) ([]v1.SriovPFSpec, error) {
 			productName = string([]byte(productName)[0:37]) + "..."
 		}
 
-		// validate device has default route, exclude device in-use in host
+		//validate device has default route, exclude device in-use in host
 		if isDefaultRoute, _ := hasDefaultRoute(device.Address); isDefaultRoute {
 			continue
 		}
@@ -202,22 +198,24 @@ func discoverHostDevices(nodeName string) ([]v1.SriovPFSpec, error) {
 		if utils.IsSriovPF(device.Address) {
 			var vfNum int
 			var ifName string
-			if utils.IsSriovVF(device.Address) {
-				vfNum, err = utils.GetVFNum(device.Address)
+
+			pfName, err := utils.GetPFName(device.Address)
+			if err != nil {
+				logging.Errorf("failed get PF name: %v", err)
+				continue
+			}
+
+			if !utils.IsSriovVF(device.Address) {
+				vfNum, err = utils.GetVFNum(pfName)
 				if err != nil {
+					logging.Errorf("failed get vf num: %v", err)
 					continue
 				}
 			}
 
-			pfName, err := utils.GetPFName(device.Address)
-			if err != nil {
-				klog.Errorf("failed get PF name: %v", err)
-				continue
-			}
-
 			driverName, err := utils.GetDriverName(device.Address)
 			if err != nil {
-				klog.Errorf("failed get driver name: %v", err)
+				logging.Errorf("failed get driver name: %v", err)
 				continue
 			}
 
@@ -226,7 +224,7 @@ func discoverHostDevices(nodeName string) ([]v1.SriovPFSpec, error) {
 				ifName = netDevs[0]
 			}
 
-			pf := v1.SriovPFSpec{
+			pf := v1.PFSpec{
 				IfName:   ifName,
 				PfName:   pfName,
 				Driver:   driverName,
@@ -235,6 +233,8 @@ func discoverHostDevices(nodeName string) ([]v1.SriovPFSpec, error) {
 				VfNum:    vfNum,
 				NodeName: nodeName,
 			}
+
+			logging.Errorf("get pf spec: %#v", pf)
 
 			pfList = append(pfList, pf)
 		}

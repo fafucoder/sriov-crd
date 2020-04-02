@@ -20,30 +20,31 @@ package v1
 import (
 	v1 "github.com/fafucoder/sriov-crd/pkg/apis/sriov/v1"
 	"github.com/fafucoder/sriov-crd/pkg/client/clientset/versioned/scheme"
+	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	rest "k8s.io/client-go/rest"
 )
 
-type KubeovnV1Interface interface {
+type K8sCniCncfIoV1Interface interface {
 	RESTClient() rest.Interface
 	PFsGetter
 	VFsGetter
 }
 
-// KubeovnV1Client is used to interact with features provided by the kubeovn.io group.
-type KubeovnV1Client struct {
+// K8sCniCncfIoV1Client is used to interact with features provided by the k8s.cni.cncf.io group.
+type K8sCniCncfIoV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *KubeovnV1Client) PFs() PFInterface {
+func (c *K8sCniCncfIoV1Client) PFs() PFInterface {
 	return newPFs(c)
 }
 
-func (c *KubeovnV1Client) VFs() VFInterface {
+func (c *K8sCniCncfIoV1Client) VFs() VFInterface {
 	return newVFs(c)
 }
 
-// NewForConfig creates a new KubeovnV1Client for the given config.
-func NewForConfig(c *rest.Config) (*KubeovnV1Client, error) {
+// NewForConfig creates a new K8sCniCncfIoV1Client for the given config.
+func NewForConfig(c *rest.Config) (*K8sCniCncfIoV1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -52,12 +53,12 @@ func NewForConfig(c *rest.Config) (*KubeovnV1Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &KubeovnV1Client{client}, nil
+	return &K8sCniCncfIoV1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new KubeovnV1Client for the given config and
+// NewForConfigOrDie creates a new K8sCniCncfIoV1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *KubeovnV1Client {
+func NewForConfigOrDie(c *rest.Config) *K8sCniCncfIoV1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -65,16 +66,16 @@ func NewForConfigOrDie(c *rest.Config) *KubeovnV1Client {
 	return client
 }
 
-// New creates a new KubeovnV1Client for the given RESTClient.
-func New(c rest.Interface) *KubeovnV1Client {
-	return &KubeovnV1Client{c}
+// New creates a new K8sCniCncfIoV1Client for the given RESTClient.
+func New(c rest.Interface) *K8sCniCncfIoV1Client {
+	return &K8sCniCncfIoV1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) error {
 	gv := v1.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
 
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()
@@ -85,7 +86,7 @@ func setConfigDefaults(config *rest.Config) error {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *KubeovnV1Client) RESTClient() rest.Interface {
+func (c *K8sCniCncfIoV1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

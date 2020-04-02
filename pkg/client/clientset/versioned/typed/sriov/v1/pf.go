@@ -53,7 +53,7 @@ type pFs struct {
 }
 
 // newPFs returns a PFs
-func newPFs(c *KubeovnV1Client) *pFs {
+func newPFs(c *K8sCniCncfIoV1Client) *pFs {
 	return &pFs{
 		client: c.RESTClient(),
 	}

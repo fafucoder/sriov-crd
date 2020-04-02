@@ -59,13 +59,13 @@ func NewFilteredPFInformer(client versioned.Interface, resyncPeriod time.Duratio
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubeovnV1().PFs().List(options)
+				return client.K8sCniCncfIoV1().PFs().List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubeovnV1().PFs().Watch(options)
+				return client.K8sCniCncfIoV1().PFs().Watch(options)
 			},
 		},
 		&sriovv1.PF{},

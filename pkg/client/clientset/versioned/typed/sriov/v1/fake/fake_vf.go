@@ -29,12 +29,12 @@ import (
 
 // FakeVFs implements VFInterface
 type FakeVFs struct {
-	Fake *FakeKubeovnV1
+	Fake *FakeK8sCniCncfIoV1
 }
 
-var vfsResource = schema.GroupVersionResource{Group: "kubeovn.io", Version: "v1", Resource: "vfs"}
+var vfsResource = schema.GroupVersionResource{Group: "k8s.cni.cncf.io", Version: "v1", Resource: "vfs"}
 
-var vfsKind = schema.GroupVersionKind{Group: "kubeovn.io", Version: "v1", Kind: "VF"}
+var vfsKind = schema.GroupVersionKind{Group: "k8s.cni.cncf.io", Version: "v1", Kind: "VF"}
 
 // Get takes name of the vF, and returns the corresponding vF object, and an error if there is any.
 func (c *FakeVFs) Get(name string, options v1.GetOptions) (result *sriovv1.VF, err error) {
