@@ -51,11 +51,12 @@ type VFSpec struct {
 	VFID         int    `json:"vfID"`
 	DeviceID     string `json:"deviceID"`
 	PFName       string `json:"pfName"`
+	VFName       string `json:"vfName"`
 	PodName      string `json:"podName"`
 	PodNamespace string `json:"podNamespace"`
 	NodeName     string `json:"nodeName"`
 	NetName      string `json:"netName"`
-	IPAddress    string `json:"ipAddress"`
+	IPAddress    string `json:"ipAddress,omitempty"`
 	MacAddress   string `json:"macAddress"`
 }
 

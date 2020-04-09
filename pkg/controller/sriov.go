@@ -84,11 +84,16 @@ func CreateSriovVfSpec(r cnitypes.Result, podName, podNamespace, deviceID string
 	}
 
 	vfSpec.VFID = vf
-	vfSpec.DeviceID = deviceID
 	vfSpec.PFName = pf
+	vfSpec.DeviceID = deviceID
 	vfSpec.PodNamespace = podNamespace
 	vfSpec.PodName = podName
 	vfSpec.NodeName = os.Getenv("KUBE_NODE_NAME")
+
+	vfNames, err := utils.GetVFNames(deviceID)
+	if err == nil && len(vfNames) > 0 {
+		vfSpec.VFName = vfNames[0]
+	}
 
 	for _, ifs := range result.Interfaces {
 		if ifs.Sandbox != "" {
@@ -234,8 +239,7 @@ func discoverHostDevices(nodeName string) ([]v1.PFSpec, error) {
 				NodeName: nodeName,
 			}
 
-			logging.Errorf("get pf spec: %#v", pf)
-
+			logging.Debugf("discoverHostDevices: get pf spec, %#v", pf)
 			pfList = append(pfList, pf)
 		}
 	}

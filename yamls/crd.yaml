@@ -47,6 +47,9 @@ spec:
     - name: DeviceID
       type: string
       JSONPath: .spec.deviceID
+    - name: VFName
+      type: string
+      JSONPath: .spec.vfName
     - name: PFName
       type: string
       JSONPath: .spec.pfName
